@@ -1,0 +1,261 @@
+{
+  "name": "Expenses PocketBot TG",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        -112
+      ],
+      "id": "660ac5eb-a90b-4db0-a7fd-f687a62d8844",
+      "name": "Trigger",
+      "webhookId": "3370b4f8-0dcb-40fd-9ef0-e2e11f7949e3",
+      "credentials": {
+        "telegramApi": {
+          "id": "I7qHlYkkX9AhrSml",
+          "name": "account_1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $node[\"Trigger\"].json[\"message\"][\"text\"].trim();\nconst entries = text.split(/[,\\\\n]/);\nconst results = [];\n\nfor (let entry of entries) {\n  entry = entry.trim();\n\n  // Match pattern: Description + amount + optional tk + quantity\n  const match = entry.match(/^(.*?)\\s*(\\d+(?:\\.\\d+)?)\\s*(?:tk|৳)?\\s*(.*)$/i);\n\n  if (!match) continue;\n\n  const description = match[1].trim();\n  const amount = parseFloat(match[2]);\n  const quantity = match[3].trim();\n\n  results.push({\n    json: {\n      description: description || \"No Description\",\n      amount,\n      quantity: quantity || \"Not specified\",\n      date: new Date().toLocaleDateString(\"en-GB\"),\n      month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        -112
+      ],
+      "id": "6bd00e6d-1608-4aef-8a1b-131be89df2e3",
+      "name": "Code1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "let total = 0;\nconst now = new Date();\n\n// \"28 January 2026\" ফরম্যাটে তারিখ\nconst day = now.getDate();\nconst monthName = now.toLocaleString('en-US', { month: 'long' });\nconst year = now.getFullYear();\nconst formattedDate = `${day} ${monthName} ${year}`;\n\nfor (let i = 0; i < items.length; i++) {\n  const amount = parseFloat(items[i].json.Amount);\n  if (!isNaN(amount)) {\n    total += amount;\n  }\n}\n\nreturn [{\n  json: {\n    total: total.toLocaleString('en-IN'), // এটি ১,১৫০ এর মতো কমা ফরম্যাটে দেখাবে\n    month: formattedDate\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -16
+      ],
+      "id": "bbeec2c8-fecf-40ef-ab9f-955bde678491",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1T3_zu2vZHr0HCQG4oQTm0Hw8K3kEf_VDYNA8I8exjoI",
+          "mode": "list",
+          "cachedResultName": "Pocket_Bot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T3_zu2vZHr0HCQG4oQTm0Hw8K3kEf_VDYNA8I8exjoI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T3_zu2vZHr0HCQG4oQTm0Hw8K3kEf_VDYNA8I8exjoI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date ": "={{ $json.date }}",
+            "Description ": "={{ $json.description }}",
+            "Amount": "={{ $json.amount }}",
+            "Quantity": "={{ $json.quantity }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date ",
+              "displayName": "Date ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description ",
+              "displayName": "Description ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        -208
+      ],
+      "id": "fdb6affc-61b5-4d62-87e7-9452a1ec0ceb",
+      "name": "Append row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jqVCL7bCq9hbr0Px",
+          "name": "Google Sheets account 363"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1T3_zu2vZHr0HCQG4oQTm0Hw8K3kEf_VDYNA8I8exjoI",
+          "mode": "list",
+          "cachedResultName": "Pocket_Bot",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T3_zu2vZHr0HCQG4oQTm0Hw8K3kEf_VDYNA8I8exjoI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T3_zu2vZHr0HCQG4oQTm0Hw8K3kEf_VDYNA8I8exjoI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        -16
+      ],
+      "id": "b31ecea6-7757-49d3-8f98-ff52bb2f3d9e",
+      "name": "Get row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jqVCL7bCq9hbr0Px",
+          "name": "Google Sheets account 363"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7486204112",
+        "text": "=<b>📊 POCKETBOT | EXPENSE SUMMARY</b>\n━━━━━━━━━━━━━━━━━━\n🗓️ <b>তারিখ:</b> <code>{{ $json.month }}</code>\n💰 <b>মোট ব্যয়:</b> <code>{{ $json.total }} BDT</code>\n━━━━━━━━━━━━━━━━━━\n✨ <i>আপনার খরচের হিসাব সফলভাবে আপডেট হয়েছে।</i>\n✅ <b>Status:</b> <code>Success</code>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        -16
+      ],
+      "id": "de6bbf6b-df11-4eae-b4f5-1e036f680686",
+      "name": "Send mge",
+      "webhookId": "eaf15900-db5c-4ff1-b547-bb08df099939",
+      "credentials": {
+        "telegramApi": {
+          "id": "I7qHlYkkX9AhrSml",
+          "name": "account_1"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Append row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Send mge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "34d90d2f-e182-4fda-9037-94327b780849",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f00bba974abf03cb5183d4d65f8a9645a781b04770df6a7d08284fca87d50b3"
+  },
+  "id": "wg0uoorj3OzIOW0n",
+  "tags": []
+}
